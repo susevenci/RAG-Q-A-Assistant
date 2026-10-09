@@ -58,70 +58,85 @@ export default function KnowledgeBase({ kbs, onRefresh }) {
 
   return (
     <div className="page">
-      <section className="card">
-        <h2>新建知识库</h2>
-        <div className="row">
-          <input
-            placeholder="知识库名称"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <input
-            placeholder="描述（可选）"
-            value={desc}
-            onChange={(e) => setDesc(e.target.value)}
-          />
-          <button onClick={doCreate} disabled={busy || !name.trim()}>
-            创建
-          </button>
-        </div>
-      </section>
+      <div className="page-doc">
+        <h1 className="page-title">知识库</h1>
 
-      <section className="card">
-        <h2>知识库列表</h2>
-        {kbs.length === 0 && <p className="muted">暂无知识库，先创建一个吧。</p>}
-        <ul className="kb-list">
-          {kbs.map((kb) => (
-            <li key={kb.id} className={activeKB === kb.id ? 'kb-item active' : 'kb-item'}>
-              <div className="kb-head" onClick={() => setActiveKB(kb.id)}>
-                <span className="kb-name">{kb.name}</span>
-                <span className="muted">{kb.files.length} 个文件</span>
-                <button className="danger small" onClick={(e) => { e.stopPropagation(); doDelete(kb) }}>
-                  删除
-                </button>
-              </div>
-              {activeKB === kb.id && (
-                <div className="kb-body">
-                  <p className="muted">{kb.description || '暂无描述'}</p>
-                  <div className="row">
-                    <button onClick={() => fileRef.current?.click()}>上传文件</button>
-                    <span className="muted">支持 .txt .md .csv .pdf .docx 等</span>
-                    {uploading && <span className="busy">正在处理 {uploading} …</span>}
-                    {msg && <span className="msg">{msg}</span>}
-                  </div>
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    multiple
-                    accept=".txt,.md,.markdown,.csv,.json,.log,.pdf,.docx"
-                    style={{ display: 'none' }}
-                    onChange={doUpload}
-                  />
-                  {active && active.files.length > 0 && (
-                    <ul className="file-list">
-                      {active.files.map((f) => (
-                        <li key={f.name}>
-                          {f.name} <span className="muted">{f.chunks} 片段</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+        <section className="block">
+          <h2>新建</h2>
+          <div className="row">
+            <input
+              placeholder="知识库名称"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <input
+              placeholder="描述（可选）"
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
+            />
+            <button className="btn-primary" onClick={doCreate} disabled={busy || !name.trim()}>
+              创建
+            </button>
+          </div>
+        </section>
+
+        <section className="block">
+          <h2>全部知识库</h2>
+          {kbs.length === 0 && <p className="muted">暂无知识库，先创建一个吧。</p>}
+          <ul className="kb-list">
+            {kbs.map((kb) => (
+              <li key={kb.id}>
+                <div className="kb-row" onClick={() => setActiveKB(activeKB === kb.id ? null : kb.id)}>
+                  <span className="kb-name">{kb.name}</span>
+                  <span className="kb-meta mono">
+                    {kb.files.length} 文件 · {kb.files.reduce((n, f) => n + (f.chunks || 0), 0)} 片段
+                  </span>
+                  <button
+                    className="btn-del"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      doDelete(kb)
+                    }}
+                  >
+                    删除
+                  </button>
                 </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
+                {activeKB === kb.id && (
+                  <div className="kb-detail">
+                    <p className="muted">{kb.description || '暂无描述'}</p>
+                    <div className="row">
+                      <button className="btn-ghost" onClick={() => fileRef.current?.click()}>
+                        上传文件
+                      </button>
+                      <span className="muted">支持 .txt .md .csv .pdf .docx 等</span>
+                      {uploading && <span className="msg">正在处理 {uploading} …</span>}
+                      {msg && <span className="msg">{msg}</span>}
+                    </div>
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      multiple
+                      accept=".txt,.md,.markdown,.csv,.json,.log,.pdf,.docx"
+                      style={{ display: 'none' }}
+                      onChange={doUpload}
+                    />
+                    {active && active.files.length > 0 && (
+                      <ul className="file-list">
+                        {active.files.map((f) => (
+                          <li key={f.name}>
+                            <span className="file-name">{f.name}</span>
+                            <span className="muted mono">{f.chunks} 片段</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
     </div>
   )
 }

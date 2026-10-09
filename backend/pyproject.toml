@@ -1,6 +1,6 @@
 [project]
 name = "rag-backend"
-version = "0.2.0"
+version = "0.3.0"
 description = "RAG 问答服务后端（FastAPI + FAISS + 本地 Embedding + 云端 LLM）"
 requires-python = ">=3.10"
 dependencies = [

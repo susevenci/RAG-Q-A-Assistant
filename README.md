@@ -143,7 +143,7 @@ npm run dev
 
 ## 版本
 
-- **应用版本**：`0.2.0`（变更明细见 [CHANGELOG.md](./CHANGELOG.md)）
+- **应用版本**：`0.3.0`（变更明细见 [CHANGELOG.md](./CHANGELOG.md)）
 - 后端 Python：3.10+（开发验证于 3.14.7）
 - 前端 Node：18+（开发验证于 24.20.0）
 - 关键依赖：FastAPI 0.115+ · FAISS-cpu 1.13+ · OpenAI SDK 1.58+ · React 19 · Vite 6（精确版本见 `backend/uv.lock` 与 `frontend/package-lock.json`）
