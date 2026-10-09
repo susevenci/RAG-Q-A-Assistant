@@ -1,0 +1,97 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: #f4f5f7;
+  color: #1f2328;
+}
+.app { display: flex; flex-direction: column; height: 100vh; }
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px; background: #fff; border-bottom: 1px solid #e6e8eb;
+}
+.logo { font-size: 18px; font-weight: 700; color: #16a34a; }
+.tabs { display: flex; gap: 8px; }
+.tab {
+  border: none; background: transparent; padding: 8px 16px;
+  border-radius: 8px; cursor: pointer; font-size: 14px; color: #555;
+}
+.tab.active { background: #16a34a; color: #fff; }
+.tab:hover:not(.active) { background: #eef2f5; }
+
+.content { flex: 1; overflow: auto; padding: 20px 24px; }
+.page { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+.card {
+  background: #fff; border: 1px solid #e6e8eb; border-radius: 12px; padding: 20px;
+}
+.card h2 { margin: 0 0 12px; font-size: 16px; }
+.card h3 { margin: 0 0 8px; font-size: 15px; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.muted { color: #8a9099; font-size: 13px; }
+.center { text-align: center; }
+.busy { color: #16a34a; font-size: 13px; }
+.msg { color: #16a34a; font-size: 13px; }
+.error { color: #dc2626; font-size: 13px; }
+code { background: #eef2f5; padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+
+input, textarea, select {
+  border: 1px solid #d5d9de; border-radius: 8px; padding: 8px 12px;
+  font-size: 14px; font-family: inherit; outline: none;
+}
+input:focus, textarea:focus { border-color: #16a34a; }
+input[type="text"], .row input:not([type]) { flex: 1; }
+
+button {
+  border: none; background: #16a34a; color: #fff; padding: 8px 16px;
+  border-radius: 8px; cursor: pointer; font-size: 14px;
+}
+button:hover:not(:disabled) { background: #15803d; }
+button:disabled { background: #b8c0c9; cursor: not-allowed; }
+button.small { background: #e9ecef; color: #444; padding: 4px 10px; font-size: 12px; }
+button.small:hover:not(:disabled) { background: #dde1e5; }
+button.danger { background: #dc2626; }
+button.danger:hover:not(:disabled) { background: #b91c1c; }
+
+.kb-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.kb-item { border: 1px solid #e6e8eb; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
+.kb-item.active { border-color: #16a34a; }
+.kb-head {
+  display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer;
+}
+.kb-name { font-weight: 600; flex: 1; }
+.kb-body { padding: 4px 14px 12px; }
+.file-list { list-style: none; margin: 10px 0 0; padding: 0; }
+.file-list li { padding: 4px 0; font-size: 13px; border-top: 1px dashed #e6e8eb; }
+
+.form { display: flex; flex-direction: column; gap: 14px; }
+.form label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #555; }
+.form input { width: 100%; }
+
+/* 对话页 */
+.chat { display: flex; gap: 16px; height: 100%; }
+.chat-side { width: 260px; flex-shrink: 0; }
+.chat-main { flex: 1; display: flex; flex-direction: column; }
+.chat-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.check-all { display: flex; align-items: center; gap: 6px; font-size: 13px; margin-bottom: 8px; }
+.kb-check { list-style: none; margin: 0; padding: 0; }
+.kb-check li { padding: 4px 0; }
+.kb-check label { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+
+.chat-msgs { flex: 1; overflow: auto; padding: 8px; display: flex; flex-direction: column; gap: 12px; }
+.bubble { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.6; }
+.bubble.user { align-self: flex-end; background: #16a34a; color: #fff; }
+.bubble.assistant { align-self: flex-start; background: #f1f3f5; }
+.bubble-text { white-space: pre-wrap; word-break: break-word; }
+
+.sources { margin-top: 8px; font-size: 12px; }
+.sources summary { cursor: pointer; color: #16a34a; }
+.source { margin-top: 8px; padding: 8px; background: #fff; border: 1px solid #e6e8eb; border-radius: 8px; }
+.src-tag { font-weight: 700; color: #16a34a; }
+.src-file { margin-left: 6px; font-weight: 600; }
+.src-score { margin-left: 6px; color: #8a9099; }
+.src-text { margin: 6px 0 0; color: #555; white-space: pre-wrap; }
+
+.chat-input { display: flex; gap: 10px; margin-top: 12px; }
+.chat-input textarea { flex: 1; resize: none; }

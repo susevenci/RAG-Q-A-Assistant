@@ -1,0 +1,18 @@
+[project]
+name = "rag-backend"
+version = "0.1.0"
+description = "RAG 问答服务后端（FastAPI + FAISS + 本地 Embedding + 云端 LLM）"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.34",
+    "python-multipart>=0.0.20",
+    "faiss-cpu>=1.13",
+    "numpy>=2.0",
+    "openai>=1.58",
+    "pydantic>=2.10",
+    "pydantic-settings>=2.7",
+    "pypdf>=5.0",
+    "docx2txt>=0.8",
+    "requests>=2.32",
+]

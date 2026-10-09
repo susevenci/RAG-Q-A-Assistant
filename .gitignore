@@ -1,0 +1,29 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+# 真实环境配置（含本地 Embedding 端点等），仅提交 .env.example
+.env
+
+# ===== Node =====
+node_modules/
+# 注意：package-lock.json 需要提交，用于锁定依赖版本
+
+# ===== 运行时数据（含 LLM API Key、上传文件、向量索引，禁止上传） =====
+backend/data/
+
+# ===== IDE / 编辑器 =====
+.vscode/
+.idea/
+*.iml
+.DS_Store
+
+# ===== Windows =====
+Thumbs.db
+desktop.ini
+
+# ===== 日志 / 临时文件 =====
+*.log
+npm-debug.log*
