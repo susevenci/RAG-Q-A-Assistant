@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
-import { getLLMConfig, setLLMConfig, listModels } from '../api.js'
+import {
+  getLLMConfig, setLLMConfig, listModels,
+  getEmbedConfig, setEmbedConfig, listEmbedModels, testEmbed,
+} from '../api.js'
 
 export default function Settings() {
   const [baseUrl, setBaseUrl] = useState('')
@@ -9,12 +12,27 @@ export default function Settings() {
   const [msg, setMsg] = useState('')
   const [err, setErr] = useState('')
 
+  // Embedding 配置
+  const [ebUrl, setEbUrl] = useState('')
+  const [ebKey, setEbKey] = useState('')
+  const [ebModel, setEbModel] = useState('')
+  const [ebModels, setEbModels] = useState([])
+  const [ebMsg, setEbMsg] = useState('')
+  const [ebErr, setEbErr] = useState('')
+
   useEffect(() => {
     (async () => {
       try {
         const c = await getLLMConfig()
         setBaseUrl(c.base_url || '')
         setModel(c.model || '')
+      } catch (e) {
+        console.error(e)
+      }
+      try {
+        const ec = await getEmbedConfig()
+        setEbUrl(ec.base_url || '')
+        setEbModel(ec.model || '')
       } catch (e) {
         console.error(e)
       }
@@ -43,6 +61,42 @@ export default function Settings() {
     } catch (e) {
       setErr(e.message)
       setModels([])
+    }
+  }
+
+  const doSaveEmbed = async () => {
+    setEbErr('')
+    setEbMsg('')
+    try {
+      await setEmbedConfig(ebUrl, ebKey, ebModel)
+      setEbKey('')
+      setEbMsg('已保存')
+    } catch (e) {
+      setEbErr(e.message)
+    }
+  }
+
+  const doLoadEmbedModels = async () => {
+    setEbErr('')
+    setEbMsg('正在拉取模型列表…')
+    try {
+      const r = await listEmbedModels()
+      setEbModels(r.models || [])
+      setEbMsg(`获取到 ${r.models.length} 个模型`)
+    } catch (e) {
+      setEbErr(e.message)
+      setEbModels([])
+    }
+  }
+
+  const doTestEmbed = async () => {
+    setEbErr('')
+    setEbMsg('正在测试连接…')
+    try {
+      const r = await testEmbed()
+      setEbMsg(`连接成功，向量维度 ${r.dim}`)
+    } catch (e) {
+      setEbErr(e.message)
     }
   }
 
@@ -98,12 +152,54 @@ export default function Settings() {
       </section>
 
       <section className="card">
-        <h2>Embedding（本地 LM Studio）</h2>
+        <h2>Embedding（向量化服务）</h2>
         <p className="muted">
-          向量模型使用本地 LM Studio 的 <code>text-embedding-qwen3-embedding-0.6b</code>，
-          走 OpenAI 兼容端点（默认 <code>http://localhost:1234/v1</code>）。
-          请在 LM Studio 中加载该模型并开启本地服务器。
+          向量模型走任意 OpenAI 兼容端点，默认本地 LM Studio（<code>http://localhost:1234/v1</code> +
+          <code> text-embedding-qwen3-embedding-0.6b</code>）。可改为其他服务或模型。
+          <b>注意：更换模型后向量维度可能变化，已有知识库需重新上传文件。</b>
         </p>
+        <div className="form">
+          <label>
+            Base URL
+            <input
+              placeholder="http://localhost:1234/v1"
+              value={ebUrl}
+              onChange={(e) => setEbUrl(e.target.value)}
+            />
+          </label>
+          <label>
+            API Key
+            <input
+              type="password"
+              placeholder="留空则保持原值（LM Studio 可不填）"
+              value={ebKey}
+              onChange={(e) => setEbKey(e.target.value)}
+            />
+          </label>
+          <label>
+            模型
+            <input
+              list="embed-model-list"
+              placeholder="如 text-embedding-qwen3-embedding-0.6b"
+              value={ebModel}
+              onChange={(e) => setEbModel(e.target.value)}
+            />
+            <datalist id="embed-model-list">
+              {ebModels.map((m) => (
+                <option key={m} value={m} />
+              ))}
+            </datalist>
+          </label>
+          <div className="row">
+            <button onClick={doLoadEmbedModels}>拉取模型列表</button>
+            <button onClick={doTestEmbed}>测试连接</button>
+            <button onClick={doSaveEmbed} disabled={!ebUrl.trim() || !ebModel.trim()}>
+              保存配置
+            </button>
+          </div>
+          {ebMsg && <p className="msg">{ebMsg}</p>}
+          {ebErr && <p className="error">{ebErr}</p>}
+        </div>
       </section>
     </div>
   )

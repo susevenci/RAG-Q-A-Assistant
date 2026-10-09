@@ -40,6 +40,35 @@ def build_context(hits: list[dict]) -> str:
     return "\n\n".join(lines)
 
 
+def _build_messages(question: str, context: str, history: list[dict] | None) -> list[dict]:
+    """组装带上下文记忆的 messages：system -> 历史轮次 -> 当前问题（含参考片段）。"""
+    user_prompt = question
+    if context:
+        user_prompt = f"参考片段:\n{context}\n\n用户问题:\n{question}"
+
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    for turn in history or []:
+        role = turn.get("role")
+        content = turn.get("content")
+        if role in ("user", "assistant") and content:
+            messages.append({"role": role, "content": content})
+    messages.append({"role": "user", "content": user_prompt})
+    return messages
+
+
+def _to_sources(hits: list[dict]) -> list[dict]:
+    return [
+        {
+            "index": i + 1,
+            "file": h.get("file", "未知"),
+            "kb_id": h.get("kb_id"),
+            "score": round(h.get("score", 0.0), 4),
+            "text": h.get("text", ""),
+        }
+        for i, h in enumerate(hits)
+    ]
+
+
 def rag_answer(
     kb_ids: list[str],
     question: str,
@@ -53,27 +82,27 @@ def rag_answer(
     """
     hits = retrieve(kb_ids, question)
     context = build_context(hits)
-    user_prompt = question
-    if context:
-        user_prompt = f"参考片段:\n{context}\n\n用户问题:\n{question}"
-
-    # 组装带上下文记忆的 messages：system -> 历史轮次 -> 当前问题（含参考片段）
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    for turn in history or []:
-        role = turn.get("role")
-        content = turn.get("content")
-        if role in ("user", "assistant") and content:
-            messages.append({"role": role, "content": content})
-    messages.append({"role": "user", "content": user_prompt})
+    messages = _build_messages(question, context, history)
     answer = llm.chat(messages, model=model)
-    sources = [
-        {
-            "index": i + 1,
-            "file": h.get("file", "未知"),
-            "kb_id": h.get("kb_id"),
-            "score": round(h.get("score", 0.0), 4),
-            "text": h.get("text", ""),
-        }
-        for i, h in enumerate(hits)
-    ]
-    return {"answer": answer, "sources": sources}
+    return {"answer": answer, "sources": _to_sources(hits)}
+
+
+def rag_answer_stream(
+    kb_ids: list[str],
+    question: str,
+    model: str | None = None,
+    history: list[dict] | None = None,
+):
+    """流式 RAG 问答：先 yield 检索结果，再逐段 yield 增量文本。
+
+    产出事件：
+      {"type": "sources", "sources": [...]}   检索完成后立即产出
+      {"type": "delta", "text": "..."}        LLM 增量文本（可能多次）
+    """
+    hits = retrieve(kb_ids, question)
+    sources = _to_sources(hits)
+    yield {"type": "sources", "sources": sources}
+    context = build_context(hits)
+    messages = _build_messages(question, context, history)
+    for delta in llm.chat_stream(messages, model=model):
+        yield {"type": "delta", "text": delta}

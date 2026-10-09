@@ -1,16 +1,19 @@
 """FastAPI 应用入口与路由。"""
+import json
 import shutil
 import uuid
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from . import extractors, knowledge_store, llm, rag
+from . import chat_store, embedding, extractors, knowledge_store, llm, rag
 from .chunking import chunk_text
 from .config import settings
 from .embedding import embed_texts
+from .embedding_config import get_embedding_config, save_embedding_config
 from .llm_config import get_llm_config, save_llm_config
 from .vectorstore import drop_index, get_index
 
@@ -94,6 +97,83 @@ async def upload_file(kb_id: str, file: UploadFile = File(...)):
     return {"ok": True, "file": name, "chunks": len(chunks)}
 
 
+# ---------------- 会话持久化 ----------------
+class ChatIn(BaseModel):
+    messages: list[dict]
+
+
+@app.get("/api/chats")
+def list_chats():
+    return chat_store.list_chats()
+
+
+@app.post("/api/chats")
+def create_chat():
+    return chat_store.create_chat()
+
+
+@app.get("/api/chats/{chat_id}")
+def get_chat(chat_id: str):
+    chat = chat_store.get_chat(chat_id)
+    if chat is None:
+        raise HTTPException(404, "会话不存在")
+    return chat
+
+
+@app.put("/api/chats/{chat_id}")
+def save_chat(chat_id: str, body: ChatIn):
+    chat = chat_store.save_chat(chat_id, body.messages)
+    if chat is None:
+        raise HTTPException(404, "会话不存在")
+    return {"ok": True}
+
+
+@app.delete("/api/chats/{chat_id}")
+def delete_chat(chat_id: str):
+    if not chat_store.delete_chat(chat_id):
+        raise HTTPException(404, "会话不存在")
+    return {"ok": True}
+
+
+# ---------------- Embedding 配置 ----------------
+class EmbedConfigIn(BaseModel):
+    base_url: str
+    api_key: str = ""
+    model: str = ""
+
+
+@app.get("/api/embed/config")
+def get_embed_config():
+    cfg = get_embedding_config()
+    return {
+        "base_url": cfg["base_url"],
+        "has_api_key": bool(cfg["api_key"]),
+        "model": cfg["model"],
+    }
+
+
+@app.post("/api/embed/config")
+def set_embed_config(body: EmbedConfigIn):
+    return save_embedding_config(body.base_url, body.api_key, body.model)
+
+
+@app.get("/api/embed/models")
+def list_embed_models():
+    try:
+        return {"models": embedding.list_models()}
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(502, f"获取模型列表失败: {e}") from e
+
+
+@app.post("/api/embed/test")
+def test_embed():
+    """连接测试：向量化一条样例文本，返回向量维度。"""
+    try:
+        return embedding.test_connection()
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(502, f"连接失败: {e}") from e
+
+
 # ---------------- LLM 配置 ----------------
 class LLMConfigIn(BaseModel):
     base_url: str
@@ -142,6 +222,27 @@ def ask(body: AskIn):
         raise HTTPException(400, str(e)) from e
     except Exception as e:  # noqa: BLE001
         raise HTTPException(500, f"问答失败: {e}") from e
+
+
+@app.post("/api/ask/stream")
+def ask_stream(body: AskIn):
+    """流式问答：SSE 逐段推送增量文本，检索结果作为首个事件先行下发。"""
+    if not body.question.strip():
+        raise HTTPException(400, "问题不能为空")
+
+    def event_stream():
+        try:
+            for ev in rag.rag_answer_stream(
+                body.kb_ids, body.question, model=body.model, history=body.history
+            ):
+                yield f"data: {json.dumps(ev, ensure_ascii=False)}\n\n"
+            yield "data: [DONE]\n\n"
+        except RuntimeError as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)}, ensure_ascii=False)}\n\n"
+        except Exception as e:  # noqa: BLE001
+            yield f"data: {json.dumps({'type': 'error', 'message': f'问答失败: {e}'}, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
 @app.get("/api/health")

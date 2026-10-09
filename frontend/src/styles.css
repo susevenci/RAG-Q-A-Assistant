@@ -72,6 +72,19 @@ button.danger:hover:not(:disabled) { background: #b91c1c; }
 /* 对话页 */
 .chat { display: flex; gap: 16px; height: 100%; }
 .chat-side { width: 260px; flex-shrink: 0; }
+.chat-side h3 { display: flex; align-items: center; justify-content: space-between; }
+.chat-side h3 + h3 { margin-top: 16px; }
+.chat-list { list-style: none; margin: 0 0 8px; padding: 0; max-height: 240px; overflow-y: auto; }
+.chat-item {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 6px; padding: 6px 8px; margin-bottom: 4px;
+  border-radius: 8px; font-size: 13px; cursor: pointer;
+}
+.chat-item:hover { background: #f1f3f5; }
+.chat-item.active { background: #e6f4ea; }
+.chat-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-item .danger { opacity: 0; }
+.chat-item:hover .danger, .chat-item.active .danger { opacity: 1; }
 .chat-main { flex: 1; display: flex; flex-direction: column; }
 .chat-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .check-all { display: flex; align-items: center; gap: 6px; font-size: 13px; margin-bottom: 8px; }
@@ -84,6 +97,8 @@ button.danger:hover:not(:disabled) { background: #b91c1c; }
 .bubble.user { align-self: flex-end; background: #16a34a; color: #fff; }
 .bubble.assistant { align-self: flex-start; background: #f1f3f5; }
 .bubble-text { white-space: pre-wrap; word-break: break-word; }
+.bubble.streaming .bubble-text::after { content: '▍'; margin-left: 2px; animation: blink 1s step-end infinite; }
+@keyframes blink { 50% { opacity: 0; } }
 
 .sources { margin-top: 8px; font-size: 12px; }
 .sources summary { cursor: pointer; color: #16a34a; }

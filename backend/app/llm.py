@@ -31,3 +31,19 @@ def chat(messages: list[dict], model: str | None = None, temperature: float = 0.
         model=model, messages=messages, temperature=temperature
     )
     return resp.choices[0].message.content or ""
+
+
+def chat_stream(messages: list[dict], model: str | None = None, temperature: float = 0.3):
+    """流式对话：逐段 yield 增量文本（generator）。"""
+    cfg = get_llm_config()
+    client = _client()
+    model = model or cfg.get("model")
+    if not model:
+        raise RuntimeError("尚未选择 LLM 模型，请先在「设置」中选择模型")
+    stream = client.chat.completions.create(
+        model=model, messages=messages, temperature=temperature, stream=True
+    )
+    for chunk in stream:
+        delta = chunk.choices[0].delta.content if chunk.choices else None
+        if delta:
+            yield delta
