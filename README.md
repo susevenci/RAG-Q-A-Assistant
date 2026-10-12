@@ -59,16 +59,26 @@ RAG/
 │       ├── knowledge_store.py # 知识库元数据
 │       ├── chat_store.py   # 历史会话持久化（data/chats/）
 │       └── rag.py          # 检索 + Prompt 组装 + 生成（含流式 rag_answer_stream）
-└── frontend/               # 前端
-    ├── package.json
-    ├── vite.config.js      # 开发代理 /api -> 后端 8000
-    └── src/
-        ├── App.jsx
-        ├── api.js
-        └── pages/          # 知识库 / 对话 / 设置 三页
+├── frontend/               # 前端
+│   ├── package.json
+│   ├── vite.config.js      # 开发代理 /api -> 后端 8000
+│   └── src/
+│       ├── App.jsx
+│       ├── api.js
+│       └── pages/          # 知识库 / 对话 / 设置 三页
+└── start.bat               # 一键启动脚本（双击同时启动前后端）
 ```
 
 ## 快速开始
+
+### 0. 一键启动（推荐）
+
+双击项目根目录的 `start.bat`（或在终端执行 `.\start.bat`），脚本会自动在两个窗口中分别完成前后端的依赖安装并启动服务：
+
+- 后端：`uv sync` → 若无 `backend/.env` 自动从 `.env.example` 复制 → `uvicorn`（<http://127.0.0.1:8000>）
+- 前端：`npm install` → `npm run dev`（<http://localhost:5173>）
+
+关闭对应窗口即可停止服务。需要手动分步启动或了解细节，见下面第 2、3 步。
 
 ### 1. 启动 LM Studio（Embedding 服务）
 
