@@ -2,6 +2,19 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.4.0] - 2026-10-12
+
+### 新增（Features）
+
+- **一键启动脚本 `start.bat`**：双击即可同时启动前后端，自动在两个独立窗口中分别执行——后端 `uv sync` → `uvicorn --reload`（<http://127.0.0.1:8000>），前端 `npm install` → `npm run dev`（<http://localhost:5173>）。
+  - 若 `backend/.env` 不存在，自动从 `.env.example` 复制生成。
+  - 先起后端、间隔 2 秒再起前端；关闭对应窗口即停止该侧服务。
+  - 也可在终端执行 `.\start.bat`（PowerShell）或 `start.bat`（CMD）。
+
+### 说明
+
+- 本次为开发体验 / 工程化更新：无新增第三方依赖，后端 API 与前端功能均无变化。
+
 ## [0.3.0] - 2026-10-09
 
 ### 变更（前端 UI 改版 · 证据工作台）
